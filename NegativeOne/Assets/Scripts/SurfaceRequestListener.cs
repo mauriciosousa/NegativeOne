@@ -6,6 +6,8 @@ using System.Net.Sockets;
 using System.Linq;
 using System.Text;
 
+
+
 public class SurfaceRequestListener : MonoBehaviour
 {
     private Properties _properties;
@@ -19,6 +21,7 @@ public class SurfaceRequestListener : MonoBehaviour
 
     private UdpClient _udpClient_RemoteSurface = null;
     private IPEndPoint _anyIP_RemoteSurface;
+
 
     void Awake()
     {
@@ -46,11 +49,14 @@ public class SurfaceRequestListener : MonoBehaviour
     {
         Byte[] receiveBytes = _udpClient_LocalSurface.EndReceive(ar, ref _anyIP_LocalSurface);
         string result = System.Text.Encoding.UTF8.GetString(receiveBytes);
-        //_log.WriteLine("[SurfaceRequestListener] Local Surface Received");
-
+        string[] trackermessage = result.Split(MessageSeparators.L0);
+        result = trackermessage[0] + MessageSeparators.L0 + trackermessage[1];
+        Sensor[] sensors = _retrieveSensors(trackermessage[2]);
         if (SurfaceMessage.isMessage(result))
         {
-            _main.setLocalSurface(new SurfaceRectangle(result));
+            SurfaceRectangle s = new SurfaceRectangle(result);
+            s.sensors = sensors;
+            _main.setLocalSurface(s);
             _udpClient_LocalSurface.Close();
         }
         else
@@ -61,15 +67,38 @@ public class SurfaceRequestListener : MonoBehaviour
     {
         Byte[] receiveBytes = _udpClient_RemoteSurface.EndReceive(ar, ref _anyIP_RemoteSurface);
         string result = System.Text.Encoding.UTF8.GetString(receiveBytes);
-        //_log.WriteLine("[SurfaceRequestListener] Remote Surface Received");
-
+        string[] trackermessage = result.Split(MessageSeparators.L0);
+        result = trackermessage[0] + MessageSeparators.L0 + trackermessage[1];
+        Sensor[] sensors = _retrieveSensors(trackermessage[2]);
         if (SurfaceMessage.isMessage(result))
         {
-            _main.setRemoteSurface(new SurfaceRectangle(result));
+            SurfaceRectangle s = new SurfaceRectangle(result);
+            s.sensors = sensors;
+            _main.setRemoteSurface(s);
             _udpClient_RemoteSurface.Close();
         }
         else
             _udpClient_RemoteSurface.BeginReceive(new AsyncCallback(this.ReceiveCallback_RemoteSurface), null);
+    }
+
+    private Sensor [] _retrieveSensors(string v)
+    {
+        List<Sensor> sensors = new List<Sensor>();
+        string[] sensorsInfo = v.Split(MessageSeparators.L2);
+        foreach (string s in sensorsInfo)
+        {
+            if (s.Length > 0)
+            {
+                string[] values = s.Split(MessageSeparators.L3);
+                Sensor sensor = new Sensor();
+                sensor.id = values[0];
+                sensor.position = new Vector3(float.Parse(values[1]), float.Parse(values[2]), float.Parse(values[3]));
+                sensor.rotation = new Quaternion(float.Parse(values[4]), float.Parse(values[5]), float.Parse(values[6]), float.Parse(values[7]));
+                sensors.Add(sensor);
+            }
+        }
+
+        return sensors.ToArray();
     }
 
     void Update()

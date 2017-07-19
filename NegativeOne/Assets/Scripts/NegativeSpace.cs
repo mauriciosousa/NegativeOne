@@ -115,7 +115,7 @@ public class NegativeSpace : MonoBehaviour {
                 Vector3 head = _bodiesManager.human.body.Joints[BodyJointType.head];
                 Vector3 leftHand = _bodiesManager.human.body.Joints[BodyJointType.leftHandTip];
                 Vector3 rightHand = _bodiesManager.human.body.Joints[BodyJointType.rightHandTip];
-                
+                _handCursor.transform.position = rightHand;
 
             }
         }

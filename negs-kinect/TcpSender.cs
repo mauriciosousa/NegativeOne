@@ -62,12 +62,15 @@ namespace Microsoft.Samples.Kinect.ColorBasics
         {
             if (_connected)
             {
+                Console.WriteLine("FrameLength: " + frame.Length);
                 try
                 {
                     _stream.Write(frame, 0, frame.Length);
                 }
-                catch
+                catch (Exception e)
                 {
+                    Console.WriteLine(e.Message);
+                    Console.WriteLine(e.StackTrace);
                     close();
                     _connected = false;
                 }

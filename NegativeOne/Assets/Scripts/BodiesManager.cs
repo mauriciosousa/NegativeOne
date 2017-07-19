@@ -44,8 +44,8 @@ public class BodiesManager : MonoBehaviour
                     }
                     else
                     {
-                        //GameObject screenCenter = GameObject.Find("localScreenCenter");
-                        //if (screenCenter != null && Vector3.Distance(h.body.Joints[BodyJointType.head], screenCenter.transform.position) < Vector3.Distance(newHuman.body.Joints[BodyJointType.head], screenCenter.transform.position))
+                        GameObject screenCenter = GameObject.Find("localScreenCenter");
+                        if (screenCenter != null && Vector3.Distance(h.body.Joints[BodyJointType.head], screenCenter.transform.position) < Vector3.Distance(newHuman.body.Joints[BodyJointType.head], screenCenter.transform.position))
                         {
                             newHuman = h;
                         }

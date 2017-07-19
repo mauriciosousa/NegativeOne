@@ -6,6 +6,13 @@ using System.Net.Sockets;
 using System.Text;
 using UnityEngine;
 
+public class Sensor
+{
+    public string id = null;
+    public Vector3 position = Vector3.zero;
+    public Quaternion rotation = Quaternion.identity;
+}
+
 public class SurfaceRectangle
 {
     private Vector3 _bl;
@@ -15,6 +22,8 @@ public class SurfaceRectangle
     private Vector3 _tl;
     public Vector3 SurfaceTopLeft { get { return _tl; } }
     private Vector3 _tr;
+    public Sensor[] sensors = null;
+
     public Vector3 SurfaceTopRight { get { return _tr; } }
 
     public Vector3 Center { get { return (_bl + _tr) * 0.5f; } }
@@ -45,6 +54,7 @@ public class SurfaceRectangle
     {
         string[] values = value.Split(MessageSeparators.L0)[1].Split(MessageSeparators.L1);
         string name = values[0];
+        sensors = new Sensor[0];
 
         _bl = CommonUtils.networkStringToVector3(values[1], MessageSeparators.L3);
         _br = CommonUtils.networkStringToVector3(values[2], MessageSeparators.L3);

@@ -60,6 +60,7 @@ namespace Microsoft.Samples.Kinect.ColorBasics
 
         private string MachineName;
 
+        private object __listLock__;
         private List<byte> __AvatarData__;
         private byte __index0__;
         private byte __index1__;
@@ -72,6 +73,8 @@ namespace Microsoft.Samples.Kinect.ColorBasics
         public MainWindow()
         {
             MachineName = Environment.MachineName;
+
+            __listLock__ = new object();
 
             this.kinectSensor = KinectSensor.GetDefault();
 
@@ -127,6 +130,7 @@ namespace Microsoft.Samples.Kinect.ColorBasics
         private void MultiFrameSourceReader_MultiSourceFrameArrived(object sender, MultiSourceFrameArrivedEventArgs ex)
         {
             __AvatarData__ = new List<byte>();
+
 
             int depthWidth = 0;
             int depthHeight = 0;
@@ -330,7 +334,9 @@ namespace Microsoft.Samples.Kinect.ColorBasics
                     }//
 
 
-                    int numOfElements = __AvatarData__.Count;
+                    List<byte> listToSend = new List<byte>(__AvatarData__);
+
+                    int numOfElements = listToSend.Count;
                     if (numOfElements > 0)
                     {
                         if (_tcp.Connected)
@@ -341,13 +347,16 @@ namespace Microsoft.Samples.Kinect.ColorBasics
 
                                 try
                                 {
-
+                                    List<byte> blablabla = new List<byte>();
                                     byte[] s = BitConverter.GetBytes(numOfElements); // [4]
+                                    Console.WriteLine("OLA " + listToSend.Count);
                                     for (int i = s.Length - 1; i >= 0; i--)
                                     {
-                                        __AvatarData__.Insert(0, s[i]);
+                                        //blablabla.Insert(0, s[i]);
+                                        listToSend.Insert(0, s[i]);
                                     }
-                                    _tcp.write(__AvatarData__.ToArray());
+                                    _tcp.write(listToSend.ToArray());
+                                    //_tcp.write(blablabla.ToArray());
                                 }
                                 catch (Exception e)
                                 {

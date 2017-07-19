@@ -62,6 +62,7 @@ public class Main : MonoBehaviour {
         _udpBodiesListener = GameObject.Find("BodiesManager").GetComponent<UdpBodiesListener>();
         _bodies = GameObject.Find("BodiesManager").GetComponent<BodiesManager>();
         _udpBodiesListener.startListening(int.Parse(properties.localSetupInfo.trackerBroadcastPort));
+        Debug.Log(properties.localSetupInfo.trackerBroadcastPort);
 
     }
 
@@ -114,6 +115,23 @@ public class Main : MonoBehaviour {
                 _localOrigin = localOrigin;
                 _remoteOrigin = remoteOrigin;
 
+                foreach (Sensor sensor in _localSurface.sensors)
+                {
+                    GameObject g = new GameObject(sensor.id);
+                    g.transform.parent = _localOrigin.transform;
+                    g.transform.localPosition = sensor.position;
+                    g.transform.localRotation = sensor.rotation;
+                    
+                }
+
+                foreach (Sensor sensor in _remoteSurface.sensors)
+                {
+                    GameObject g = new GameObject(sensor.id);
+                    g.transform.parent = _remoteOrigin.transform;
+                    g.transform.localPosition = sensor.position;
+                    g.transform.localRotation = sensor.rotation;
+                }
+
                 _negativeSpace.create(location, _localSurface, remoteSurfaceProxy, properties.negativeSpaceLength);
 
                 _projection.init(_localSurface);
@@ -134,15 +152,15 @@ public class Main : MonoBehaviour {
     public void setLocalSurface(SurfaceRectangle surfaceRectangle)
     {
         Debug.Log("Received Local Surface: " + surfaceRectangle.ToString());
-        __localSurfaceReceived = true;
         _localSurface = surfaceRectangle;
+        __localSurfaceReceived = true;
     }
 
     public void setRemoteSurface(SurfaceRectangle surfaceRectangle)
     {
         Debug.Log("Received Remote Surface: " + surfaceRectangle.ToString());
-        __remoteSurfaceReceived = true;
         _remoteSurface = surfaceRectangle;
+        __remoteSurfaceReceived = true;
     }
 
     private Vector3 _calculateRemoteProxy(Vector3 point, GameObject localScreenCenter, float negativeSpaceLength)
