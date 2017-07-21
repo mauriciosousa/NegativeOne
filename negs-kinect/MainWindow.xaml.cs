@@ -54,7 +54,7 @@ namespace Microsoft.Samples.Kinect.ColorBasics
 
         private TcpSender _tcp;
 
-        private string configFilename = "../../../config.txt";
+        private string configFilename = "config.txt";
 
         private Line _connectionLine;
 
@@ -70,9 +70,13 @@ namespace Microsoft.Samples.Kinect.ColorBasics
         private byte __Green__;
         private byte __Red__;
 
+        private DateTime _lastSent;
+
         public MainWindow()
         {
             MachineName = Environment.MachineName;
+
+            _lastSent = DateTime.Now;
 
             __listLock__ = new object();
 
@@ -341,29 +345,36 @@ namespace Microsoft.Samples.Kinect.ColorBasics
                     {
                         if (_tcp.Connected)
                         {
-                            new Thread(() =>
+                            if (DateTime.Now > _lastSent.AddMilliseconds(_configFile.SendRate))
                             {
-                                Thread.CurrentThread.IsBackground = true;
 
-                                try
+                                new Thread(() =>
                                 {
-                                    List<byte> blablabla = new List<byte>();
-                                    byte[] s = BitConverter.GetBytes(numOfElements); // [4]
-                                    Console.WriteLine("OLA " + listToSend.Count);
-                                    for (int i = s.Length - 1; i >= 0; i--)
+                                    Thread.CurrentThread.IsBackground = true;
+
+                                    try
                                     {
+                                        List<byte> blablabla = new List<byte>();
+                                        byte[] s = BitConverter.GetBytes(numOfElements); // [4]
+                                    Console.WriteLine("OLA " + listToSend.Count);
+                                        for (int i = s.Length - 1; i >= 0; i--)
+                                        {
                                         //blablabla.Insert(0, s[i]);
                                         listToSend.Insert(0, s[i]);
-                                    }
-                                    _tcp.write(listToSend.ToArray());
+                                        }
+                                        _tcp.write(listToSend.ToArray());
                                     //_tcp.write(blablabla.ToArray());
                                 }
-                                catch (Exception e)
-                                {
-                                    Console.WriteLine(e.Message);
-                                    Console.WriteLine(e.StackTrace);
-                                }
-                            }).Start();
+                                    catch (Exception e)
+                                    {
+                                        Console.WriteLine(e.Message);
+                                        Console.WriteLine(e.StackTrace);
+                                    }
+                                }).Start();
+
+                                _lastSent = DateTime.Now;
+                            }
+
                         }
                     }
 
@@ -483,13 +494,18 @@ namespace Microsoft.Samples.Kinect.ColorBasics
             if (!_configFile.Load(configFilename))
             {
                 Console.WriteLine("no such config file");
-            }
+                List<string> lines = new List<string>();
+                lines.Add("tcp.port=5004");
+                lines.Add("tcp.address=127.0.0.1");
+                lines.Add("tcp.sendrate=500");
+                File.WriteAllLines(configFilename, lines.ToArray());
+;            }
             else
             {
                 Console.WriteLine("Config File:");
                 Console.WriteLine("tcp.port: " + _configFile.TcpPort);
                 Console.WriteLine("tcp.address: " + _configFile.TcpAddress);
-
+                Console.WriteLine("tcp.sendrate: " + _configFile.SendRate);
             }
         }
 

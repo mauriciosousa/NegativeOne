@@ -96,14 +96,11 @@ public class SurfaceRequest : MonoBehaviour
     private DateTime lastTry;
     public int requestInterval = 100;
 
-    void Awake()
+    public void request()
     {
         _properties = GetComponent<Properties>();
         _main = GetComponent<Main>();
-    }
 
-    public void request()
-    {
         Debug.Log(this.ToString() + ": Requesting local surface to " + _properties.localSetupInfo.machineAddress + ":" + _properties.localSetupInfo.trackerListenPort + " to receive in " + _properties.localSetupInfo.localSurfaceListen);
         Debug.Log(this.ToString() + ": Requesting remote surface to " + _properties.remoteSetupInfo.machineAddress + ":" + _properties.remoteSetupInfo.trackerListenPort + " to receive in " + _properties.localSetupInfo.remoteSurfaceListen);
 

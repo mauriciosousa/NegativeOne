@@ -9,7 +9,7 @@ Instructor.tracker.broadcast.port=5102
 
 Instructor.tracker.listen.port=5103
 
-Instructor.avatar.listen.port=5104
+Instructor.avatar.listen.port=5109
 
 Instructor.local.surface.listen=5105
 Instructor.remote.surface.listen=5106
@@ -30,7 +30,7 @@ Assembler.tracker.listen.port=5003
 
 
 
-Assembler.avatar.listen.port=5004
+Assembler.avatar.listen.port=5009
 
 
 Assembler.local.surface.listen=5005

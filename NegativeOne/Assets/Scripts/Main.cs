@@ -38,6 +38,7 @@ public class Main : MonoBehaviour {
     private NegativeSpace _negativeSpace;
     private PerspectiveProjection _projection;
 
+
     void Awake()
     {
         Application.runInBackground = true;
@@ -62,7 +63,6 @@ public class Main : MonoBehaviour {
         _udpBodiesListener = GameObject.Find("BodiesManager").GetComponent<UdpBodiesListener>();
         _bodies = GameObject.Find("BodiesManager").GetComponent<BodiesManager>();
         _udpBodiesListener.startListening(int.Parse(properties.localSetupInfo.trackerBroadcastPort));
-        Debug.Log(properties.localSetupInfo.trackerBroadcastPort);
 
     }
 
@@ -97,6 +97,26 @@ public class Main : MonoBehaviour {
                 Vector3 TLp = _calculateRemoteProxy(_localSurface.SurfaceTopLeft, localScreenCenter, properties.negativeSpaceLength);
 
                 SurfaceRectangle remoteSurfaceProxy = new SurfaceRectangle(BLp, BRp, TLp, TRp);
+
+                GameObject lbl = new GameObject("lbl");
+                lbl.transform.position = _localSurface.SurfaceBottomLeft;
+                lbl.transform.rotation = _localSurface.Perpendicular;
+                GameObject lbr = new GameObject("lbr");
+                lbr.transform.position = _localSurface.SurfaceBottomRight;
+                lbr.transform.rotation = _localSurface.Perpendicular;
+                GameObject ltr = new GameObject("ltr");
+                ltr.transform.position = _localSurface.SurfaceTopRight;
+                ltr.transform.rotation = _localSurface.Perpendicular;
+                GameObject rbl = new GameObject("rbl");
+                rbl.transform.position = _remoteSurface.SurfaceBottomLeft;
+                rbl.transform.rotation = _remoteSurface.Perpendicular;
+                GameObject rbr = new GameObject("rbr");
+                rbr.transform.position = _remoteSurface.SurfaceBottomRight;
+                rbr.transform.rotation = _remoteSurface.Perpendicular;
+                GameObject rtr = new GameObject("rtr");
+                rtr.transform.position = _remoteSurface.SurfaceTopRight;
+                rtr.transform.rotation = _remoteSurface.Perpendicular;
+
 
                 GameObject remoteScreenCenter = new GameObject("remoteScreenCenter");
                 remoteScreenCenter.transform.position = _remoteSurface.Center;
@@ -135,6 +155,8 @@ public class Main : MonoBehaviour {
                 _negativeSpace.create(location, _localSurface, remoteSurfaceProxy, properties.negativeSpaceLength);
 
                 _projection.init(_localSurface);
+
+                GetComponent<TcpKinectListener>().Init();
 
                 __everythingIsNiceAndWellConfigured = true;
             }

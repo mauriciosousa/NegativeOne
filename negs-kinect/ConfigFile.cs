@@ -10,11 +10,13 @@ namespace Microsoft.Samples.Kinect.ColorBasics
         // Netwoek
         public int TcpPort { get; private set; }
         public string TcpAddress { get; private set; }
+        public int SendRate { get; private set; }
 
         public ConfigFile()
         {
             TcpPort = 0;
             TcpAddress = "localhost";
+            SendRate = 50;
         }
 
         public bool Load(string filename)
@@ -30,6 +32,7 @@ namespace Microsoft.Samples.Kinect.ColorBasics
                         {
                             if (s[0] == "tcp.port") this.TcpPort = int.Parse(s[1]);
                             else if (s[0] == "tcp.address") this.TcpAddress = s[1];
+                            else if (s[0] == "tcp.sendrate") this.SendRate = int.Parse(s[1]);
                         }
                         else return false;
                     }

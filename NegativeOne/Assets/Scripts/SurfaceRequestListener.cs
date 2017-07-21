@@ -13,24 +13,24 @@ public class SurfaceRequestListener : MonoBehaviour
     private Properties _properties;
     private Main _main;
 
-    private int _portForLocal;
-    private int _portForRemote;
+    private int _portForLocal = 0;
+    private int _portForRemote = 0;
 
     private UdpClient _udpClient_LocalSurface = null;
     private IPEndPoint _anyIP_LocalSurface;
 
     private UdpClient _udpClient_RemoteSurface = null;
     private IPEndPoint _anyIP_RemoteSurface;
-
-
-    void Awake()
-    {
-        _properties = GetComponent<Properties>();
-        _main = GetComponent<Main>();
-    }
+    
 
     public void StartReceive()
     {
+        _properties = GetComponent<Properties>();
+        _main = GetComponent<Main>();
+
+        Debug.Log(this.ToString() + ": Will request a local surface from " + _properties.localSetupInfo.localSurfaceListen);
+        Debug.Log(this.ToString() + ": Will request a remote surface from " + _properties.remoteSetupInfo.localSurfaceListen);
+
         _portForLocal = int.Parse(_properties.localSetupInfo.localSurfaceListen);
         _portForRemote = int.Parse(_properties.localSetupInfo.remoteSurfaceListen);
 

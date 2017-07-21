@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.IO;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
@@ -10,6 +9,7 @@ using UnityEngine;
 
 public class KinectStream
 {
+
     public bool Ready;
     private TcpClient _client;
     public DepthViewer depthViewer;
@@ -28,7 +28,8 @@ public class KinectStream
     public KinectStream(TcpClient client)
     {
 
-        int frameSize = 512 * 424; // w*h
+        int frameSize = TcpKinectListener.FrameDescription_Width * TcpKinectListener.FrameDescription_Height;
+        //int frameSize = 512 * 424;
 
         Ready = false;
         texture = new Color[frameSize];
@@ -45,29 +46,33 @@ public class KinectStream
 
     public void stopStream()
     {
-        Exception e = new Exception("CLOSE EXCEPTION");
-        Debug.LogException(e);
-
-        _client.GetStream().Close();
+        //_client.Client.Disconnect(true);
         _client.Close();
-        _client = null;
+        _client.Client.Close();
+    }
 
-        Debug.Break();
+    internal void reload()
+    {
+        if (Ready)
+        {
+
+        }
     }
 }
 
 public class TcpKinectListener : MonoBehaviour
 {
 
+    public const int FrameDescription_Width = 512;
+    public const int FrameDescription_Height = 424;
+
     public int DEBUG;
 
-    //public int BUFFER = 4341760;
-
-    private int BUFFER = 327683516;
+    public int BUFFER = 4341760;
 
     public bool showNetworkDetails = true;
 
-    public int TcpListeningPort;
+    private int TcpListeningPort;
     private TcpListener _server;
 
     private bool _running;
@@ -77,9 +82,9 @@ public class TcpKinectListener : MonoBehaviour
 
     public DepthViewer depthViewer;
 
-    public int SIZE = 0;
+    private bool _init = false;
 
-    void Start()
+    public void Init() //Start
     {
 
         //_threads = new List<Thread>();
@@ -88,10 +93,13 @@ public class TcpKinectListener : MonoBehaviour
         _kinectStreamsToDestroy = new List<KinectStream>();
 
         TcpListeningPort = int.Parse(GetComponent<Properties>().remoteSetupInfo.avatarListenPort);
+        Debug.Log(this.ToString() + ": TcpListen at port " + TcpListeningPort);
         _server = new TcpListener(IPAddress.Any, TcpListeningPort);
 
         _running = true;
         _server.Start();
+
+        _init = true;
 
         Thread acceptLoop = new Thread(new ParameterizedThreadStart(AcceptClients));
         //_threads.Add(acceptLoop);
@@ -130,18 +138,17 @@ public class TcpKinectListener : MonoBehaviour
             {
                 bytesRead = ns.Read(message, 0, SIZEHELLO);
             }
-            catch (Exception e)
+            catch
             {
                 Debug.Log("Connection Lost from " + kstream.name);
-                Debug.LogException(e);
-                _close(client);
+                client.Close();
                 _kinectStreams.Remove(kstream);
             }
 
             if (bytesRead == 0)
             {
                 Debug.Log("Connection Lost from " + kstream.name);
-                _close(client);
+                client.Close();
                 _kinectStreams.Remove(kstream);
             }
 
@@ -156,8 +163,8 @@ public class TcpKinectListener : MonoBehaviour
             }
             else
             {
-                Debug.LogError("Invalid Login data from: " + kstream.name);
-                _close(client);
+                Debug.Log("Invalid Login data from: " + kstream.name);
+                client.Close();
                 _kinectStreams.Remove(kstream);
             }
 
@@ -182,50 +189,20 @@ public class TcpKinectListener : MonoBehaviour
                 byte[] sizeb = { message[0], message[1], message[2], message[3] };
                 int size = BitConverter.ToInt32(sizeb, 0);
                 kstream.size = size;
+
                 kstream.bytesReceived = size;
 
-                SIZE = size;
-
-
-                buffer = new byte[size];
-                int offset = 0;
-                int remaining = buffer.Length;
-
-                if (size > 0 && Math.Abs(size) < BUFFER)
-                {
-
-                    while (remaining > 0)
-                    {
-                        int read = ns.Read(buffer, offset, remaining);
-                        if (read <= 0)
-                            throw new EndOfStreamException
-                                (String.Format("End of stream reached with {0} bytes left to read", remaining));
-
-                        //Array.Copy(buffer, 0, kstream.data, kstream.size - size, bytesRead);
-                        remaining -= read;
-                        offset += read;
-                    }
-
-                }
-                else
-                {
-                    Debug.LogError("Bad Size");
-                }
-
-
-                /*
-                while (false)// size > 0)
+                DEBUG = size;
+                //Debug.Log(size + " ANTES");
+                while (size > 0)
                 {
                     try
                     {
-                        if (size < buffer.Length)
-                        {
-                            bytesRead = ns.Read(buffer, 0, size);
-                        }
+                        bytesRead = ns.Read(buffer, 0, size);
                     }
                     catch (Exception e)
                     {
-                        Debug.LogException(e);
+                        Debug.Log(e.Message);
                         login = false;
                         break;
                     }
@@ -238,8 +215,7 @@ public class TcpKinectListener : MonoBehaviour
                     Array.Copy(buffer, 0, kstream.data, kstream.size - size, bytesRead);
                     size -= bytesRead;
                 }
-                */
-
+                //Debug.Log(size);
                 kstream.Ready = false;
 
 
@@ -288,168 +264,11 @@ public class TcpKinectListener : MonoBehaviour
                 kstream.Ready = true;
             }
             Debug.Log("Connection Lost from " + kstream.name);
-            _close(client);
+            client.Close();
             _kinectStreamsToDestroy.Add(kstream);
             _kinectStreams.Remove(kstream);
         }
 
-    }
-
-    private void _close(TcpClient client)
-    {
-        Exception e = new Exception("CLOSE EXCEPTION");
-        Debug.LogException(e);
-        Debug.Log(e.StackTrace);
-
-        client.GetStream().Close();
-        client.Close();
-        client = null;
-
-        Debug.Break();
-    }
-
-    void clientHandler2(object o)
-    {
-        TcpClient client = (TcpClient)o;
-
-        KinectStream kstream = new KinectStream(client);
-
-        _kinectStreams.Add(kstream);
-
-        using (NetworkStream ns = client.GetStream())
-        {
-            bool login = false;
-
-            byte[] message = new byte[BUFFER];
-
-            byte[] loginMessage = new byte[BUFFER];
-            List<byte> received = new List<byte>();
-
-            int bytesRead;
-
-            byte[] rcvSizeInBytes = new byte[2];
-            int rcvSize = 0;
-
-            int rcvBuffer = 0;
-
-            while (_running)
-            {
-                if (!login)
-                {
-                    try
-                    {
-                        bytesRead = ns.Read(loginMessage, 0, loginMessage.Length);
-                        kstream.bytesReceived = bytesRead;
-                    }
-                    catch
-                    {
-                        break;
-                    }
-
-                    if (bytesRead == 0)
-                    {
-                        break;
-                    }
-
-                    string s = System.Text.Encoding.Default.GetString(loginMessage);
-                    string[] l = s.Split('/');
-                    if (l.Length == 3 && l[0] == "k")
-                    {
-                        kstream.name = l[1];
-                        login = true;
-                        Debug.Log("New stream from " + l[1]);
-                    }
-                }
-                else
-                {
-
-                    try
-                    {
-                        bytesRead = ns.Read(rcvSizeInBytes, 0, rcvSizeInBytes.Length);
-                    }
-                    catch
-                    {
-                        break;
-                    }
-
-                    if (bytesRead > 0)
-                    {
-                        rcvSize = BitConverter.ToInt16(rcvSizeInBytes, 0);
-
-                        Debug.Log(rcvSize);
-
-                        continue;
-                        try
-                        {
-                            message = new byte[rcvSize];
-                            bytesRead = ns.Read(message, 0, message.Length);
-                            kstream.bytesReceived = bytesRead;
-
-                            message = received.ToArray();
-
-                            kstream.Ready = false;
-
-                            Color background = new Color(0, 0, 0, 0);
-                            Color foreground = Color.white;
-                            int index;
-                            ushort depth;
-                            int ptr = 0;
-                            byte[] byteValues = new byte[2];
-
-                            //message
-                            int currentLine = 0;
-
-                            continue;
-
-                            for (int i = 0; i < kstream.texture.Length; i++)
-                            {
-                                byteValues[0] = message[ptr];
-                                byteValues[1] = message[ptr + 1];
-                                index = BitConverter.ToInt16(byteValues, 0);
-
-                                if (index == 5000)
-                                {
-                                    currentLine++;
-                                    ptr += 2;
-                                    continue;
-                                }
-                                else if (i - (currentLine * 512) == index)
-                                {
-                                    foreground.b = ((float)message[ptr + 2]) / 255;
-                                    foreground.g = ((float)message[ptr + 3]) / 255;
-                                    foreground.r = ((float)message[ptr + 4]) / 255;
-                                    kstream.texture[i] = foreground;
-
-                                    byteValues[0] = message[ptr + 5];
-                                    byteValues[1] = message[ptr + 6];
-                                    depth = BitConverter.ToUInt16(byteValues, 0);
-                                    kstream.depthData[i] = depth;
-
-                                    ptr += 7;
-                                }
-                                else
-                                {
-                                    kstream.texture[i] = background;
-                                    kstream.depthData[i] = 0;
-                                }
-                            }
-
-                            kstream.Ready = true;
-                        }
-                        catch (Exception e)
-                        {
-                            Debug.LogError(e.Message);
-                            Debug.LogError(e.StackTrace);
-                            break;
-                        }
-                    }
-                    else break;
-                }
-            }
-        }
-        Debug.Log("Connection Lost from " + kstream.name);
-        _close(client);
-        _kinectStreams.Remove(kstream);
     }
 
     private int convert2BytesToInt(byte b1, byte b2)
@@ -459,40 +278,69 @@ public class TcpKinectListener : MonoBehaviour
 
     void Update()
     {
-        foreach (KinectStream ks in _kinectStreams)
+        if (_init)
         {
-            if (ks.Ready)
+
+            foreach (KinectStream ks in _kinectStreams)
             {
-                if (ks.depthViewer == null)
+                if (ks.Ready)
                 {
-                    GameObject gameObject = new GameObject();
-                    gameObject.name = ks.name;
-                    gameObject.transform.position = Vector3.zero;
-                    ks.depthViewer = gameObject.AddComponent<DepthViewer>();
+                    ks.reload();
+
+                    if (ks.depthViewer == null)
+                    {
+                        GameObject gameObject = new GameObject();
+                        gameObject.name = ks.name + "Stream";
+                        gameObject.transform.position = Vector3.zero;
+                        gameObject.transform.rotation = Quaternion.identity;
+                        ks.depthViewer = gameObject.AddComponent<DepthViewer>();
+
+                        Transform sensor = null;
+                        Transform remoteOrigin = GameObject.Find("RemoteOrigin").transform;
+                        foreach (Transform child in remoteOrigin)
+                        {
+                            if (child.name == ks.name)
+                            {
+                                sensor = child;
+                                break;
+                            }
+                        }
+                        if (sensor != null)
+                        {
+                            gameObject.transform.parent = sensor;
+                            gameObject.transform.localPosition = Vector3.zero;
+                            gameObject.transform.localRotation = Quaternion.identity;
+                            gameObject.transform.position = sensor.transform.position;
+                            gameObject.transform.rotation = sensor.transform.rotation;
+                        }
+                        else
+                        {
+                            Debug.LogError(this.ToString() + "[Update()]: Cannot find sensor " + ks.name);
+                        }
+                    }
+
+                    ks.depthViewer.colors = ks.texture;
+                    ks.depthViewer.depth = ks.depthData;
+                    ks.Ready = false;
                 }
-
-                ks.depthViewer.colors = ks.texture;
-                ks.depthViewer.depth = ks.depthData;
-                ks.Ready = false;
             }
-        }
 
-        if (_kinectStreamsToDestroy.Count > 0)
-        {
-            foreach (KinectStream ks in _kinectStreamsToDestroy)
+            if (_kinectStreamsToDestroy.Count > 0)
             {
-                Destroy(ks.depthViewer.gameObject);
+                foreach (KinectStream ks in _kinectStreamsToDestroy)
+                {
+                    Destroy(ks.depthViewer.gameObject);
+                }
+                _kinectStreamsToDestroy.Clear();
             }
-            _kinectStreamsToDestroy.Clear();
         }
-
     }
 
     void OnGUI()
     {
         if (showNetworkDetails)
         {
-            int left = 10;
+            int left = 30;
             int top = 10;
 
             if (_kinectStreams.Count > 0)

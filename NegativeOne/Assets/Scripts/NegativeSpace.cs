@@ -18,7 +18,7 @@ public class NegativeSpace : MonoBehaviour {
     public Material negativeSpaceMaterial;
     
 
-    //private UDPHandheldListener _handheldListener;
+    private UDPHandheldListener _handheldListener;
 
     private GameObject NegativeSpaceCenter = null;
 
@@ -41,14 +41,20 @@ public class NegativeSpace : MonoBehaviour {
 
     internal void create(Location location, SurfaceRectangle localSurface, SurfaceRectangle remoteSurfaceProxy, float length)
     {
-        //_handheldListener = new UDPHandheldListener(int.Parse(_properties.localSetupInfo.receiveHandheldPort), "negativespace");
+        _handheldListener = new UDPHandheldListener(int.Parse(_properties.localSetupInfo.receiveHandheldPort));
+        Debug.Log(this.ToString() + ": Receiving Handheld data in " + _properties.localSetupInfo.receiveHandheldPort);
 
         _location = location;
         _localSurface = localSurface;
         _remoteSurfaceProxy = remoteSurfaceProxy;
         _negativeSpaceLength = length;
 
-        _createNegativeSpaceMesh();
+        //_createNegativeSpaceMesh();
+        _negativeSpaceWalls("bottomWall", _localSurface.SurfaceBottomLeft, _localSurface.SurfaceBottomRight, _remoteSurfaceProxy.SurfaceBottomRight, _remoteSurfaceProxy.SurfaceBottomLeft);
+        _negativeSpaceWalls("leftWall", _localSurface.SurfaceBottomLeft, _remoteSurfaceProxy.SurfaceBottomLeft, _remoteSurfaceProxy.SurfaceTopLeft, _localSurface.SurfaceTopLeft);
+        _negativeSpaceWalls("rightWall", _remoteSurfaceProxy.SurfaceBottomRight, _localSurface.SurfaceBottomRight, _localSurface.SurfaceTopRight, _remoteSurfaceProxy.SurfaceTopRight);
+        _negativeSpaceWalls("topWall", _remoteSurfaceProxy.SurfaceTopLeft, _remoteSurfaceProxy.SurfaceTopRight, _localSurface.SurfaceTopRight, _localSurface.SurfaceTopLeft);
+
 
         NegativeSpaceCenter = new GameObject("NegativeSpaceCenter");
         NegativeSpaceCenter.transform.position = (_localSurface.SurfaceBottomLeft + _remoteSurfaceProxy.SurfaceTopRight) * 0.5f;
@@ -59,9 +65,43 @@ public class NegativeSpace : MonoBehaviour {
         _handCursor.transform.position = Vector3.zero;
         _handCursor.transform.rotation = Quaternion.identity;
         _handCursor.transform.parent = _main.LocalOrigin.transform;
-        //_handCursor.AddComponent<NegativeSpaceCursor>();
+        _handCursor.AddComponent<HandCursor>();
 
         _spaceCreated = true;
+    }
+
+    private void _negativeSpaceWalls(string name, Vector3 a, Vector3 b, Vector3 c, Vector3 d)
+    {
+        GameObject o = new GameObject(name);
+        o.transform.position = Vector3.zero;
+        o.transform.rotation = Quaternion.identity;
+        o.transform.parent = transform;
+
+        MeshFilter meshFilter = (MeshFilter)o.AddComponent(typeof(MeshFilter));
+        Mesh m = new Mesh();
+        m.name = "NegativeSpaceMesh";
+        m.vertices = new Vector3[] { a, b, c, d };
+        m.triangles = new int[]
+            {
+                0, 1, 2,
+                0, 2, 3
+            };
+
+        Vector2[] uv = new Vector2[m.vertices.Length];
+        for (int i = 0; i < uv.Length; i++)
+        {
+            uv[i] = new Vector2(m.vertices[i].x, m.vertices[i].z);
+        }
+        m.uv = uv;
+
+        m.RecalculateNormals();
+        m.RecalculateBounds();
+
+        meshFilter.mesh = m;
+        MeshRenderer renderer = o.AddComponent(typeof(MeshRenderer)) as MeshRenderer;
+        renderer.material = negativeSpaceMaterial;
+        MeshCollider collider = o.AddComponent(typeof(MeshCollider)) as MeshCollider;
+
     }
 
     private void _createNegativeSpaceMesh()
@@ -115,8 +155,9 @@ public class NegativeSpace : MonoBehaviour {
                 Vector3 head = _bodiesManager.human.body.Joints[BodyJointType.head];
                 Vector3 leftHand = _bodiesManager.human.body.Joints[BodyJointType.leftHandTip];
                 Vector3 rightHand = _bodiesManager.human.body.Joints[BodyJointType.rightHandTip];
-                _handCursor.transform.position = rightHand;
 
+                _handCursor.transform.position = _handheldListener.Message.Hand == HandType.Left ? leftHand : rightHand;
+                _handCursor.GetComponent<HandCursor>().Update(_handheldListener.Message);
             }
         }
     }  
