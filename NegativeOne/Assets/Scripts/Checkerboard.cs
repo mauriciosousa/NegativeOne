@@ -41,6 +41,7 @@ public class Checkerboard : MonoBehaviour {
 
     public void Init()
     {
+        colorBlind = GameObject.Find("Main").GetComponent<Main>().location == Location.Assembler ? true : false;
         if (colorBlind)
         {
             blueCube.GetComponent<Highlight>().setMaterials(colorBlindMaterial, colorBlindHighlightMaterial);
@@ -134,7 +135,7 @@ public class Checkerboard : MonoBehaviour {
             Highlight h = hit.transform.GetComponent<Highlight>();
             if (h != null)
             {
-                Debug.Log(this.ToString() + "[IAmPointing]: " + h.name);
+                //Debug.Log(this.ToString() + "[IAmPointing]: " + h.name);
                 h.setHighlight(true);
                 if (_lastHighlighted != null && _lastHighlighted != h) _lastHighlighted.setHighlight(false);
                 _lastHighlighted = h;
