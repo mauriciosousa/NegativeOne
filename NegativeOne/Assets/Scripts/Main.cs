@@ -159,6 +159,8 @@ public class Main : MonoBehaviour {
                 GetComponent<TcpKinectListener>().Init();
 
                 __everythingIsNiceAndWellConfigured = true;
+
+                GameObject.Find("Checkerboard").GetComponent<Checkerboard>().Init();
             }
         }
 	}

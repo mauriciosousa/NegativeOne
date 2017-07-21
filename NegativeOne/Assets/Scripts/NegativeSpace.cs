@@ -20,12 +20,13 @@ public class NegativeSpace : MonoBehaviour {
 
     private UDPHandheldListener _handheldListener;
 
-    private GameObject NegativeSpaceCenter = null;
+    public GameObject NegativeSpaceCenter { get; private set;}
 
     private Dictionary<string, GameObject> _negativeSpaceObjects;
     private Dictionary<string, GameObject> negativeSpaceObjects { get { return _negativeSpaceObjects; } }
 
     private GameObject _handCursor;
+    public Vector3 bottomCenterPosition { get; private set; }
 
     void Awake()
     {
@@ -59,7 +60,8 @@ public class NegativeSpace : MonoBehaviour {
         NegativeSpaceCenter = new GameObject("NegativeSpaceCenter");
         NegativeSpaceCenter.transform.position = (_localSurface.SurfaceBottomLeft + _remoteSurfaceProxy.SurfaceTopRight) * 0.5f;
         NegativeSpaceCenter.transform.rotation = GameObject.Find("localScreenCenter").transform.rotation;
-        
+
+        bottomCenterPosition = (_localSurface.SurfaceBottomLeft + _remoteSurfaceProxy.SurfaceBottomRight) * 0.5f;
 
         _handCursor = new GameObject("HandCursor");
         _handCursor.transform.position = Vector3.zero;

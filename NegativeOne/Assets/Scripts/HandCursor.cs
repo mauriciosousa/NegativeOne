@@ -40,8 +40,11 @@ public class HandCursor : MonoBehaviour {
 
     private ClickEvent clickEvent;
 
+    private Checkerboard _checkerboard;
+
 	void Start ()
     {
+        _checkerboard = GameObject.Find("Checkerboard").GetComponent<Checkerboard>();
         clickEvent = new ClickEvent();
         attitude = Quaternion.identity;
 	}
@@ -59,9 +62,20 @@ public class HandCursor : MonoBehaviour {
         attitude = message.Attitude;
         transform.localRotation = Quaternion.AngleAxis(yawOffset, Vector3.up) * new Quaternion(-attitude.x, -attitude.z, -attitude.y, attitude.w);
 
+
+        Ray ray = new Ray(transform.position, transform.forward);
+        Debug.DrawRay(transform.position, transform.forward);
+
+        _checkerboard.IAmPointing(ray, clickEvent.raiseEvent(message.Click));
+
+
         if (clickEvent.raiseEvent(message.Click))
         {
             Debug.Log(this.ToString() + ": selection event.");
+        }
+        else
+        {
+
         }
 	}
 
