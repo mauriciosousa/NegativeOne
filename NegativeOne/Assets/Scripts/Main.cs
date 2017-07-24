@@ -161,6 +161,10 @@ public class Main : MonoBehaviour {
                 __everythingIsNiceAndWellConfigured = true;
 
                 GameObject.Find("Checkerboard").GetComponent<Checkerboard>().Init();
+
+                GameObject hideScreenGo = GameObject.Find("HideScreen");
+                hideScreenGo.transform.position = localScreenCenter.transform.position;
+                hideScreenGo.transform.rotation = localScreenCenter.transform.rotation;
             }
         }
 	}

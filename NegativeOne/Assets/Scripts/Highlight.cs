@@ -5,17 +5,21 @@ using UnityEngine;
 
 public class Highlight : MonoBehaviour {
 
-    public Material normal;
-    public Material highligted;
+    public Material normalMaterial;
+    public Material highligtedMaterial;
     public Material selectedMaterial;
 
-    public bool selected = false;
+    public bool selected { get; private set; }
+    public bool highlighted { get; private set; }
 
-    void Start () {
-		
+    void Start ()
+    {
+        highlighted = false;
+        selected = false;
 	}
 	
-	void Update () {
+	void Update ()
+    {
 		
 	}
 
@@ -23,22 +27,24 @@ public class Highlight : MonoBehaviour {
     {
         if (!selected)
         {
-            Material m = setValue ? highligted : normal;
+            Material m = setValue ? highligtedMaterial : normalMaterial;
             GetComponent<Renderer>().material = m;
+            highlighted = setValue;
         }
     }
 
     internal void setSelected(bool v)
     {
         selected = v;
-        Material m = v ? selectedMaterial : normal;
+        Material m = v ? selectedMaterial : normalMaterial;
         GetComponent<Renderer>().material = m;
     }
 
-    internal void setMaterials(Material colorBlindMaterial, Material colorBlindHighlightMaterial)
+    internal void setMaterials(Material colorBlindMaterial, Material colorBlindHighlightMaterial, Material colorBlindSelected)
     {
-        normal = colorBlindMaterial;
-        highligted = colorBlindHighlightMaterial;
-        GetComponent<Renderer>().material = normal;
+        normalMaterial = colorBlindMaterial;
+        highligtedMaterial = colorBlindHighlightMaterial;
+        selectedMaterial = colorBlindSelected;
+        GetComponent<Renderer>().material = normalMaterial;
     }
 }

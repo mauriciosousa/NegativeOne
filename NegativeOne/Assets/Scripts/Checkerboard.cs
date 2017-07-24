@@ -32,6 +32,7 @@ public class Checkerboard : MonoBehaviour {
 
     public Material colorBlindMaterial;
     public Material colorBlindHighlightMaterial;
+    public Material colorBlindSelected;
     public bool colorBlind = false;
 
     private bool _init = false;
@@ -39,16 +40,21 @@ public class Checkerboard : MonoBehaviour {
     public static float moveUp = 0.5f;
     public float scaleFactor = 0.03f;
 
+    private CheckerboardClient client;
+
+    private Main _main;
+
     public void Init()
     {
-        colorBlind = GameObject.Find("Main").GetComponent<Main>().location == Location.Assembler ? true : false;
+        _main = GameObject.Find("Main").GetComponent<Main>();
+        colorBlind = _main.location == Location.Assembler ? true : false;
         if (colorBlind)
         {
-            blueCube.GetComponent<Highlight>().setMaterials(colorBlindMaterial, colorBlindHighlightMaterial);
-            greenCube.GetComponent<Highlight>().setMaterials(colorBlindMaterial, colorBlindHighlightMaterial);
-            pinkCube.GetComponent<Highlight>().setMaterials(colorBlindMaterial, colorBlindHighlightMaterial);
-            redCube.GetComponent<Highlight>().setMaterials(colorBlindMaterial, colorBlindHighlightMaterial);
-            yellowCube.GetComponent<Highlight>().setMaterials(colorBlindMaterial, colorBlindHighlightMaterial);
+            blueCube.GetComponent<Highlight>().setMaterials(colorBlindMaterial, colorBlindHighlightMaterial, colorBlindSelected);
+            greenCube.GetComponent<Highlight>().setMaterials(colorBlindMaterial, colorBlindHighlightMaterial, colorBlindSelected);
+            pinkCube.GetComponent<Highlight>().setMaterials(colorBlindMaterial, colorBlindHighlightMaterial, colorBlindSelected);
+            redCube.GetComponent<Highlight>().setMaterials(colorBlindMaterial, colorBlindHighlightMaterial, colorBlindSelected);
+            yellowCube.GetComponent<Highlight>().setMaterials(colorBlindMaterial, colorBlindHighlightMaterial, colorBlindSelected);
         }
 
 
@@ -105,24 +111,39 @@ public class Checkerboard : MonoBehaviour {
         }
 
         _init = true;
+
+        client = this.GetComponent<CheckerboardClient>();
+        client.Init();
     }
 
 
     void Update()
     {
-        /*
+        
         if (!_init) return;
 
-        Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-        if (Input.GetMouseButtonDown(0))
+        if (_main.location == Location.Assembler)
         {
-            IAmPointing(ray, true);
+            Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+            if (Input.GetMouseButtonDown(0))
+            {
+                IAmPointing(ray, true);
+            }
+            else
+            {
+                IAmPointing(ray, false);
+            }
         }
-        else
+
+        if (client.Connected)
         {
-            IAmPointing(ray, false);
+            client.callHighlightUpdate(blueCube.name, blueCube.GetComponent<Highlight>().selected);
+            client.callHighlightUpdate(greenCube.name, greenCube.GetComponent<Highlight>().selected);
+            client.callHighlightUpdate(pinkCube.name, pinkCube.GetComponent<Highlight>().selected);
+            client.callHighlightUpdate(redCube.name, redCube.GetComponent<Highlight>().selected);
+            client.callHighlightUpdate(yellowCube.name, yellowCube.GetComponent<Highlight>().selected);
         }
-        */
+
     }
 
     public void IAmPointing(Ray ray, bool click)
@@ -178,6 +199,13 @@ public class Checkerboard : MonoBehaviour {
         }
     }
 
+    public void putObjectOnTopOf(string that, string there)
+    {
+        GameObject thatgo = GameObject.Find(that);
+        GameObject therego = GameObject.Find(there);
+        putObjectOnTopOf(thatgo, therego);
+    }
+
     void putObjectOnTopOf(GameObject that, int thereWidth, int thereDepth)
     {
         if (thereWidth <= boardMap.GetLength(0) && thereWidth >= 0
@@ -200,7 +228,12 @@ public class Checkerboard : MonoBehaviour {
 
         that.GetComponent<CubeBehaviour>().onTopOf = there;
         that.GetComponent<CubeBehaviour>().GoTo(there.transform.position + d * (GameObject.Find("NegativeSpaceCenter").transform.up));
-        
+
+        if (_init && _main.location == Location.Assembler)
+        {
+            client.putObjectOnTopOf(that, there);
+        }
+
         //Debug.Log(createInstruction(that, there));
     }
 

@@ -32,6 +32,8 @@ public class Properties : MonoBehaviour
     public string configFilename;
     public float negativeSpaceLength = 0.1f;
 
+    public string serverAddress = "127.0.0.1";
+
     public string configFilenameFullPath
     {
         get
@@ -74,6 +76,8 @@ public class Properties : MonoBehaviour
         info.localSurfaceListen = load(location.ToString() + ".local.surface.listen");
         info.remoteSurfaceListen = load(location.ToString() + ".remote.surface.listen");
         negativeSpaceLength = float.Parse(load("ns.length"));
+        serverAddress = load("rpc.server.address");
+
 
         return info;
     }

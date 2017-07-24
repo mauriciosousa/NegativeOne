@@ -1,5 +1,7 @@
 ns.length=0.30
 
+rpc.server.address=127.0.0.1
+
 Instructor.machine.address=127.0.0.1
 
 Instructor.rpc.port=5000
