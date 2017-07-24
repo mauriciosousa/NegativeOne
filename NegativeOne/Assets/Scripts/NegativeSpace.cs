@@ -160,6 +160,8 @@ public class NegativeSpace : MonoBehaviour {
 
                 _handCursor.transform.position = _handheldListener.Message.Hand == HandType.Left ? leftHand : rightHand;
                 _handCursor.GetComponent<HandCursor>().Update(_handheldListener.Message);
+
+                Camera.main.transform.position = head;
             }
         }
     }  
