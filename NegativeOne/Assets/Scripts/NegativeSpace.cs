@@ -178,8 +178,10 @@ public class NegativeSpace : MonoBehaviour {
                 _filteredHandPosition.Value = _handheldListener.Message.Hand == HandType.Left ? leftHand : rightHand;
                 _handCursor.transform.position = _filteredHandPosition.Value;
 
-                _handCursor.GetComponent<HandCursor>().Update(_handheldListener.Message);
-
+                if (_main.location == Location.Assembler) // Instructor cannot interact yolo
+                {
+                    _handCursor.GetComponent<HandCursor>().Update(_handheldListener.Message);
+                }
                 Camera.main.transform.position = head;
 
                 GameObject lb =  GameObject.Find("LocalBody");
