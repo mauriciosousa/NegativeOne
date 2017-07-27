@@ -148,6 +148,7 @@ public class Checkerboard : MonoBehaviour {
 
     public bool IAmPointing(Ray ray, bool click, out Vector3 hitPoint)
     {
+
         hitPoint = Vector3.zero;
         bool didHit = false;
 
