@@ -100,6 +100,6 @@ public class BodiesManager : MonoBehaviour
 
     void OnGUI()
     {
-        GUI.Label(new Rect(10, 10, 1000, 1000), "" + _humans.Count);
+        //GUI.Label(new Rect(10, 10, 1000, 1000), "" + _humans.Count);
     }
 }

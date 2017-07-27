@@ -100,8 +100,12 @@ public class DepthViewer : MonoBehaviour
     private int width = 512;
     private int height = 424;
 
+    private GameObject meshes;
+
     void Start()
     {
+        meshes = new GameObject("Meshes");
+        
 
         subMeshes = new SubMesh[4];
         for (int i = 0; i < subMeshes.Length; i++)
@@ -110,12 +114,17 @@ public class DepthViewer : MonoBehaviour
             Vector3 position = subMesh.gameObject.transform.position;
             position.y = -(i * (height / (float)subMeshes.Length - 1.0f));
             subMesh.gameObject.name = "SubMesh" + i;
-            subMesh.gameObject.transform.position = position;
-            subMesh.gameObject.transform.parent = gameObject.transform;
+            subMesh.gameObject.transform.localPosition = position + new Vector3(- width / 2, height / 2, 0);
+            //subMesh.gameObject.transform.parent = gameObject.transform;
+            subMesh.gameObject.transform.parent = meshes.transform;
             subMeshes[i] = subMesh;
         }
 
-        gameObject.transform.localScale = new Vector3(0.01f, 0.01f, 0.01f);
+        //gameObject.transform.localScale = new Vector3(0.01f, 0.01f, 0.01f);
+        meshes.transform.localScale = new Vector3(0.01f, 0.01f, 0.008f);
+        meshes.transform.parent = transform;
+        meshes.transform.localPosition = Vector3.zero;
+        meshes.transform.localRotation = Quaternion.identity;
     }
 
     void Update()

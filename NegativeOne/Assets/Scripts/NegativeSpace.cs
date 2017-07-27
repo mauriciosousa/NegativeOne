@@ -28,6 +28,16 @@ public class NegativeSpace : MonoBehaviour {
     private GameObject _handCursor;
     public Vector3 bottomCenterPosition { get; private set; }
 
+    private AdaptiveDoubleExponentialFilterVector3 _filteredHandPosition;
+
+    public SurfaceRectangle LocalSurface
+    {
+        get
+        {
+            return _localSurface;
+        }
+    }
+
     void Awake()
     {
         _negativeSpaceObjects = new Dictionary<string, GameObject>();
@@ -37,6 +47,7 @@ public class NegativeSpace : MonoBehaviour {
     {
         _main = GetComponent<Main>();
         _properties = GetComponent<Properties>();
+        _filteredHandPosition = new AdaptiveDoubleExponentialFilterVector3();
         _bodiesManager = GameObject.Find("BodiesManager").GetComponent<BodiesManager>();
 	}
 
@@ -68,6 +79,11 @@ public class NegativeSpace : MonoBehaviour {
         _handCursor.transform.rotation = Quaternion.identity;
         _handCursor.transform.parent = _main.LocalOrigin.transform;
         _handCursor.AddComponent<HandCursor>();
+
+        GameObject projector = GameObject.Find("Projector");
+        projector.transform.parent = _handCursor.transform;
+        projector.transform.localPosition = Vector3.zero;
+        projector.transform.rotation = _handCursor.transform.rotation;
 
         _spaceCreated = true;
     }
@@ -155,13 +171,46 @@ public class NegativeSpace : MonoBehaviour {
             if (_bodiesManager.human != null)
             {
                 Vector3 head = _bodiesManager.human.body.Joints[BodyJointType.head];
-                Vector3 leftHand = _bodiesManager.human.body.Joints[BodyJointType.leftHandTip];
-                Vector3 rightHand = _bodiesManager.human.body.Joints[BodyJointType.rightHandTip];
+                Vector3 leftHand = _bodiesManager.human.body.Joints[BodyJointType.leftWrist];
+                Vector3 rightHand = _bodiesManager.human.body.Joints[BodyJointType.rightWrist];
 
-                _handCursor.transform.position = _handheldListener.Message.Hand == HandType.Left ? leftHand : rightHand;
+                //_handCursor.transform.position = _handheldListener.Message.Hand == HandType.Left ? leftHand : rightHand;
+                _filteredHandPosition.Value = _handheldListener.Message.Hand == HandType.Left ? leftHand : rightHand;
+                _handCursor.transform.position = _filteredHandPosition.Value;
+
                 _handCursor.GetComponent<HandCursor>().Update(_handheldListener.Message);
 
                 Camera.main.transform.position = head;
+
+                GameObject lb =  GameObject.Find("LocalBody");
+                if (Application.isEditor && lb != null && lb.activeSelf)
+                {
+
+                    GameObject.Find("HEAD").transform.position = head;
+                    GameObject.Find("LEFTHAND").transform.position = leftHand;
+                    GameObject.Find("RIGHTHAND").transform.position = rightHand;
+                    GameObject.Find("RIGHTHAND").transform.position = rightHand;
+
+                    GameObject.Find("NECK").transform.position = _bodiesManager.human.body.Joints[BodyJointType.neck];
+                    GameObject.Find("SPINESHOULDER").transform.position = _bodiesManager.human.body.Joints[BodyJointType.spineShoulder];
+                    GameObject.Find("LEFTSHOULDER").transform.position = _bodiesManager.human.body.Joints[BodyJointType.leftShoulder];
+                    GameObject.Find("RIGHTSHOULDER").transform.position = _bodiesManager.human.body.Joints[BodyJointType.rightShoulder];
+                    GameObject.Find("LEFTELBOW").transform.position = _bodiesManager.human.body.Joints[BodyJointType.leftElbow];
+                    GameObject.Find("RIGHTELBOW").transform.position = _bodiesManager.human.body.Joints[BodyJointType.rightElbow];
+                    GameObject.Find("LEFTWRIST").transform.position = _bodiesManager.human.body.Joints[BodyJointType.leftWrist];
+                    GameObject.Find("RIGHTWRIST").transform.position = _bodiesManager.human.body.Joints[BodyJointType.rightWrist];
+                    GameObject.Find("SPINEBASE").transform.position = _bodiesManager.human.body.Joints[BodyJointType.spineBase];
+                    GameObject.Find("SPINEMID").transform.position = _bodiesManager.human.body.Joints[BodyJointType.spineMid];
+                    GameObject.Find("LEFTHIP").transform.position = _bodiesManager.human.body.Joints[BodyJointType.leftHip];
+                    GameObject.Find("RIGHTHIP").transform.position = _bodiesManager.human.body.Joints[BodyJointType.rightHip];
+                    GameObject.Find("LEFTKNEE").transform.position = _bodiesManager.human.body.Joints[BodyJointType.leftKnee];
+                    GameObject.Find("RIGHTKNEE").transform.position = _bodiesManager.human.body.Joints[BodyJointType.rightKnee];
+                    GameObject.Find("LEFTFOOT").transform.position = _bodiesManager.human.body.Joints[BodyJointType.leftFoot];
+                    GameObject.Find("RIGHTFOOT").transform.position = _bodiesManager.human.body.Joints[BodyJointType.rightFoot];
+
+
+
+                }
             }
         }
     }  

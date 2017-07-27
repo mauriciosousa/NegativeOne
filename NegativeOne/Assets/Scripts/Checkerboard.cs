@@ -38,7 +38,7 @@ public class Checkerboard : MonoBehaviour {
     private bool _init = false;
 
     public static float moveUp = 0.5f;
-    public float scaleFactor = 0.03f;
+    public float scaleFactor = 0.05f;
 
     private CheckerboardClient client;
 
@@ -85,7 +85,7 @@ public class Checkerboard : MonoBehaviour {
         transform.rotation = negativeSpaceCenter.transform.rotation;
 
         moveUp = moveUp * scaleFactor;
-        Debug.Log(this.ToString() + ": Scaling.");
+        Debug.Log(this.ToString() + ": Scaling to " + scaleFactor);
         transform.localScale = transform.localScale * scaleFactor;
 
         string path = Application.dataPath + "/initPositions.txt";
@@ -121,7 +121,7 @@ public class Checkerboard : MonoBehaviour {
     {
         
         if (!_init) return;
-
+        /*
         if (_main.location == Location.Assembler)
         {
             Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
@@ -134,7 +134,7 @@ public class Checkerboard : MonoBehaviour {
                 IAmPointing(ray, false);
             }
         }
-
+        */
         if (client.Connected)
         {
             client.callHighlightUpdate(blueCube.name, blueCube.GetComponent<Highlight>().selected);
@@ -146,17 +146,25 @@ public class Checkerboard : MonoBehaviour {
 
     }
 
-    public void IAmPointing(Ray ray, bool click)
+    public bool IAmPointing(Ray ray, bool click, out Vector3 hitPoint)
     {
-        if (!_init) return;
+        hitPoint = Vector3.zero;
+        bool didHit = false;
+
+        if (!_init) return didHit;
 
         RaycastHit hit;
         if (Physics.Raycast(ray, out hit, float.PositiveInfinity))
         {
-            Highlight h = hit.transform.GetComponent<Highlight>();
+            //Debug.Log("Danieu diz: " + hit.transform.gameObject.name);
+
+            didHit = true;
+            hitPoint = hit.point;
+
+            Highlight h = hit.transform.gameObject.GetComponent<Highlight>();
             if (h != null)
             {
-                //Debug.Log(this.ToString() + "[IAmPointing]: " + h.name);
+                Debug.Log(this.ToString() + "[IAmPointing]: " + h.name);
                 h.setHighlight(true);
                 if (_lastHighlighted != null && _lastHighlighted != h) _lastHighlighted.setHighlight(false);
                 _lastHighlighted = h;
@@ -177,6 +185,8 @@ public class Checkerboard : MonoBehaviour {
             }
         }
         _currentlyHighlighted = null;
+
+        return didHit;
     }
 
     private void _selection(GameObject o)

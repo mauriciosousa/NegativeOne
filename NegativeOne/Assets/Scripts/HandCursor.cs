@@ -42,11 +42,15 @@ public class HandCursor : MonoBehaviour {
 
     private Checkerboard _checkerboard;
 
+    private AdaptiveDoubleExponentialQuaternion _filteredRotation;
+
 	void Start ()
     {
         _checkerboard = GameObject.Find("Checkerboard").GetComponent<Checkerboard>();
         clickEvent = new ClickEvent();
         attitude = Quaternion.identity;
+
+        _filteredRotation = new AdaptiveDoubleExponentialQuaternion();
 	}
 	
 	void Update ()
@@ -60,14 +64,42 @@ public class HandCursor : MonoBehaviour {
         }
 
         attitude = message.Attitude;
-        transform.localRotation = Quaternion.AngleAxis(yawOffset, Vector3.up) * new Quaternion(-attitude.x, -attitude.z, -attitude.y, attitude.w);
-
+        //transform.localRotation = Quaternion.AngleAxis(yawOffset, Vector3.up) * new Quaternion(-attitude.x, -attitude.z, -attitude.y, attitude.w);
+        _filteredRotation.Value = attitude;
+        transform.localRotation = Quaternion.AngleAxis(yawOffset, Vector3.up) * new Quaternion(-_filteredRotation.Value.x, -_filteredRotation.Value.z, -_filteredRotation.Value.y, _filteredRotation.Value.w);
 
         Ray ray = new Ray(transform.position, transform.forward);
         Debug.DrawRay(transform.position, transform.forward);
 
-        _checkerboard.IAmPointing(ray, clickEvent.raiseEvent(message.Click));
+        //Debug.DrawLine(transform.position, transform.position + transform.forward * 1000.0f, Color.cyan);
 
+        /* cenas do daniel... se calhar é apra ir cos porcos */
+
+        SimpleProjector sp = GameObject.Find("Projector").GetComponent<SimpleProjector>();
+        Transform screenCenter = GameObject.Find("localScreenCenter").transform;
+
+        Plane surface = new Plane(screenCenter.forward, screenCenter.position);
+
+        float distance;
+
+        if (surface.Raycast(ray, out distance))
+        {
+            Vector3 hitPoint = ray.GetPoint(distance);
+            Vector3 pixel = Camera.main.WorldToScreenPoint(hitPoint);
+
+            ray = Camera.main.ScreenPointToRay(pixel);
+
+            sp.pixel = pixel;
+            sp.didHit = true;
+        }
+        else
+            sp.didHit = false;
+
+
+        /* fim cenas do daniel */
+
+        Vector3 hit = Vector3.zero;
+        _checkerboard.IAmPointing(ray, clickEvent.raiseEvent(message.Click), out hit);
 
         if (clickEvent.raiseEvent(message.Click))
         {

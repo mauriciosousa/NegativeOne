@@ -98,7 +98,7 @@ public class Main : MonoBehaviour {
 
                 SurfaceRectangle remoteSurfaceProxy = new SurfaceRectangle(BLp, BRp, TLp, TRp);
 
-                GameObject lbl = new GameObject("lbl");
+                /*GameObject lbl = new GameObject("lbl");
                 lbl.transform.position = _localSurface.SurfaceBottomLeft;
                 lbl.transform.rotation = _localSurface.Perpendicular;
                 GameObject lbr = new GameObject("lbr");
@@ -116,7 +116,7 @@ public class Main : MonoBehaviour {
                 GameObject rtr = new GameObject("rtr");
                 rtr.transform.position = _remoteSurface.SurfaceTopRight;
                 rtr.transform.rotation = _remoteSurface.Perpendicular;
-
+                */
 
                 GameObject remoteScreenCenter = new GameObject("remoteScreenCenter");
                 remoteScreenCenter.transform.position = _remoteSurface.Center;
@@ -134,6 +134,9 @@ public class Main : MonoBehaviour {
 
                 _localOrigin = localOrigin;
                 _remoteOrigin = remoteOrigin;
+
+                Transform mist = GameObject.Find("mist").transform;
+                mist.position = new Vector3(0, _remoteOrigin.transform.position.y - mist.localScale.x, 0);
 
                 foreach (Sensor sensor in _localSurface.sensors)
                 {
@@ -165,6 +168,8 @@ public class Main : MonoBehaviour {
                 GameObject hideScreenGo = GameObject.Find("HideScreen");
                 hideScreenGo.transform.position = localScreenCenter.transform.position;
                 hideScreenGo.transform.rotation = localScreenCenter.transform.rotation;
+
+                //GameObject.Find("Projector").GetComponent<SimpleProjector>().init(remoteScreenCenter.transform);
             }
         }
 	}

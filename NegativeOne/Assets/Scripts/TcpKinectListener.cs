@@ -289,14 +289,14 @@ public class TcpKinectListener : MonoBehaviour
 
                     if (ks.depthViewer == null)
                     {
-                        GameObject gameObject = new GameObject();
-                        gameObject.name = ks.name + "Stream";
-                        gameObject.transform.position = Vector3.zero;
-                        gameObject.transform.rotation = Quaternion.identity;
-                        ks.depthViewer = gameObject.AddComponent<DepthViewer>();
+                        GameObject gameObjectStream = new GameObject();
+                        gameObjectStream.name = ks.name + "Stream";
+
+                        ks.depthViewer = gameObjectStream.AddComponent<DepthViewer>();
 
                         Transform sensor = null;
                         Transform remoteOrigin = GameObject.Find("RemoteOrigin").transform;
+                        Transform remoteScreenCenter = GameObject.Find("remoteScreenCenter").transform;
                         foreach (Transform child in remoteOrigin)
                         {
                             if (child.name == ks.name)
@@ -307,16 +307,30 @@ public class TcpKinectListener : MonoBehaviour
                         }
                         if (sensor != null)
                         {
-                            gameObject.transform.parent = sensor;
-                            gameObject.transform.localPosition = Vector3.zero;
-                            gameObject.transform.localRotation = Quaternion.identity;
-                            gameObject.transform.position = sensor.transform.position;
-                            gameObject.transform.rotation = sensor.transform.rotation;
+                            Debug.Log(this.ToString() + ": attaching avatar to sensor " + sensor.name);
+
+                            
+
+
+                            gameObjectStream.transform.position = sensor.transform.position;
+                            //gameObjectStream.transform.rotation = Quaternion.Lerp(gameObjectStream.transform.rotation, sensor.transform.rotation, 0.9f);
+                            gameObjectStream.transform.rotation = Quaternion.Lerp(gameObjectStream.transform.rotation, sensor.transform.rotation, 0.9f);
+                            gameObjectStream.transform.parent = sensor;
+
+
+                            //gameObjectStream.transform.localPosition = Vector3.zero;
+                            //gameObjectStream.transform.localRotation = Quaternion.identity;
+
+
+
+
                         }
                         else
                         {
                             Debug.LogError(this.ToString() + "[Update()]: Cannot find sensor " + ks.name);
                         }
+
+
                     }
 
                     ks.depthViewer.colors = ks.texture;
@@ -336,7 +350,7 @@ public class TcpKinectListener : MonoBehaviour
         }
     }
 
-    void OnGUI()
+    void NOP__OnGUI()
     {
         if (showNetworkDetails)
         {
