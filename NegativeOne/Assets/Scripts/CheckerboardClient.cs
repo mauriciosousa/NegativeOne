@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using UnityEngine;
 
 public class CheckerboardClient : MonoBehaviour {
@@ -8,6 +9,11 @@ public class CheckerboardClient : MonoBehaviour {
     private Main _main;
     private NetworkView _networkView;
     private Checkerboard _board;
+
+
+
+
+
 
     public bool Connected { get { return Network.peerType == NetworkPeerType.Client; } }
 
@@ -20,14 +26,17 @@ public class CheckerboardClient : MonoBehaviour {
 
     public void Init()
     {
+
         int port = int.Parse(_main.properties.localSetupInfo.rpcPort);
         string address = _main.properties.serverAddress;
 
         Debug.Log(this.ToString() + "[RPC]: trying to connect to " + address + ":" + port);
         Network.Connect(address, port);
     }
-	
-	void Update ()
+
+   
+
+    void Update ()
     {
 		
 	}
@@ -90,6 +99,10 @@ public class CheckerboardClient : MonoBehaviour {
         {
             // TODO: SET CONDITION ANd PUZZLE
             Debug.Log(this.ToString() + ": Start: condition " + condition + ", puzzle " + puzzle);
+            if (_main.location == Location.Assembler)
+            {
+                _board.StartEvaluation(condition, puzzle);
+            }
         }
     }
 

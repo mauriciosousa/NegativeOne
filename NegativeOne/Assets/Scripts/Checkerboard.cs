@@ -1,8 +1,41 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using UnityEngine;
 
+
+public class CheckerboardLogger
+{
+    private List<String> _lines;
+    private int _size;
+
+    public string[] Lines
+    {
+        get
+        {
+            return _lines.ToArray();
+        }
+    }
+
+    public CheckerboardLogger(int size)
+    {
+        _lines = new List<string>();
+        _size = size;
+    }
+
+    public void write(string line)
+    {
+        if (_lines != null)
+        {
+            if (_lines.Count == _size)
+            {
+                _lines.RemoveAt(0);
+            }
+            _lines.Add(line);
+        }
+    }
+}
 
 public class Checkerboard : MonoBehaviour {
     
@@ -44,8 +77,22 @@ public class Checkerboard : MonoBehaviour {
 
     private Main _main;
 
+
+    private string _solutionsFolder;
+
+
+    private bool _showDebug = false;
+    private CheckerboardLogger _checkerboardLogger;
+    private List<Solution> _solutions;
+
+
+    public Solution currentSolution;
+    public bool inAEvaluationSession = false;
+
     public void Init()
     {
+        _loadSolutions();
+        _checkerboardLogger = new CheckerboardLogger(10);
         _main = GameObject.Find("Main").GetComponent<Main>();
         colorBlind = _main.location == Location.Assembler ? true : false;
         if (colorBlind)
@@ -116,6 +163,64 @@ public class Checkerboard : MonoBehaviour {
         client.Init();
     }
 
+    internal void StartEvaluation(int condition, int puzzle)
+    {
+        /**
+         *   EVALUATION START 
+         */
+        currentSolution = GetSolutionByName("" + puzzle);
+        inAEvaluationSession = true;
+
+        DateTime startTime = DateTime.Now;
+        Debug.Log("[EVALUATION START] cond={" + condition + "}, puzzle={" + puzzle + "} at " + startTime.ToString("yy/MM/dd-H:mm:ss zzz"));
+
+
+          
+    }
+
+    private void _loadSolutions()
+    {
+        currentSolution = null;
+        _solutionsFolder = Application.dataPath + "/Solutions/";
+        Debug.Log(_solutionsFolder);
+        _solutions = new List<Solution>();
+        if (Directory.Exists(_solutionsFolder))
+        {
+            FileInfo[] files = new DirectoryInfo(_solutionsFolder).GetFiles("*.txt");
+            if (files.Length > 0)
+            {
+                foreach (FileInfo f in files)
+                {
+                    _solutions.Add(new Solution(f.FullName));
+                }
+            }
+            else Debug.LogError(this.ToString() + ": No files in Directory - " + _solutionsFolder);
+
+
+        }
+        else
+        {
+            Debug.LogError(this.ToString() + ": Directory does not exists - " + _solutionsFolder);
+        }
+
+        //string solname = "1";
+        //Solution solution = GetSolutionByName(solname);
+        //if (solution == null)
+        //{
+            
+        //    Debug.LogError(this.ToString() + ": no such solution " + solname);
+        //}
+    }
+
+    public Solution GetSolutionByName(string name)
+    {
+        foreach (Solution s in _solutions)
+        {
+            Debug.Log("SOLUNITON: " + s.Name);
+            if (s.Name == name) return s;
+        }
+        return null;
+    }
 
     void Update()
     {
@@ -144,6 +249,11 @@ public class Checkerboard : MonoBehaviour {
             client.callHighlightUpdate(yellowCube.name, yellowCube.GetComponent<Highlight>().selected);
         }
 
+
+        if (Input.GetKeyDown(KeyCode.F1))
+        {
+            _showDebug = !_showDebug;
+        }
     }
 
     public bool IAmPointing(Ray ray, bool click, out Vector3 hitPoint)
@@ -165,7 +275,7 @@ public class Checkerboard : MonoBehaviour {
             Highlight h = hit.transform.gameObject.GetComponent<Highlight>();
             if (h != null)
             {
-                Debug.Log(this.ToString() + "[IAmPointing]: " + h.name);
+                //Debug.Log(this.ToString() + "[IAmPointing]: " + h.name);
                 h.setHighlight(true);
                 if (_lastHighlighted != null && _lastHighlighted != h) _lastHighlighted.setHighlight(false);
                 _lastHighlighted = h;
@@ -190,22 +300,75 @@ public class Checkerboard : MonoBehaviour {
         return didHit;
     }
 
+    private bool isNextSelectionIfEvaluation(string objectName)
+    {
+        if (inAEvaluationSession && currentSolution != null)
+        {
+            string nextSelection = currentSolution.GetNextSelect();
+            Debug.Log("[SELECTION] selected={" + objectName + "}, next={" + nextSelection + "}");
+            return objectName == nextSelection;
+        }
+        return true;
+    }
+
+    private bool isNextMoveIfEvaluation(string that, string there)
+    {
+        if (inAEvaluationSession && currentSolution != null)
+        {
+            string nextThat = currentSolution.GetNextSelect();
+            string nextThere = currentSolution.GetNextMove();
+            return that == nextThat && there == nextThere;
+        }
+        return true;
+    }
+
     private void _selection(GameObject o)
     {
         if (selectedObject != null) selectedObject.GetComponent<Highlight>().setSelected(false);
 
-
-
-
-        if (selectedObject == null && isCube(o))
+        if (selectedObject == null && isCube(o)) // SELECT OBJECT
         {
+            if (inAEvaluationSession)
+            {
+                if (isNextSelectionIfEvaluation(o.name))
+                {
+                    // CORRECT SELECTION
+                    _checkerboardLogger.write("[SELECTION] CORRECT");
+                }
+                else
+                {
+                    // WRONG SELECTION
+                    _checkerboardLogger.write("[SELECTION] WRONG");
+                }
+            }
+
             selectedObject = o;
             selectedObject.GetComponent<Highlight>().setSelected(true);
+            if (inAEvaluationSession) currentSolution.Select(o.name);
+           
         }
-        else if (selectedObject != null)
+        else if (selectedObject != null) // MOVE OBJECT
         {
             selectedObject.GetComponent<Highlight>().setSelected(false);
+
+            if (inAEvaluationSession)
+            {
+                if (isNextMoveIfEvaluation(selectedObject.name, o.name))
+                {
+                    // CORRECT SELECTION
+                    _checkerboardLogger.write("[MOVE] CORRECT");
+                }
+                else
+                {
+                    // WRONG SELECTION
+                    _checkerboardLogger.write("[MOVE] WRONG");
+                }
+            }
+
+
             putObjectOnTopOf(selectedObject, o);
+            if (inAEvaluationSession) currentSolution.Move(selectedObject.name, o.name);
+
             selectedObject = null;
         }
     }
@@ -293,6 +456,35 @@ public class Checkerboard : MonoBehaviour {
                 bool saved;
                 f.tryFlush(Application.dataPath + "/initPositions.txt", out saved);
                 if (saved) Debug.Log("init positions saved");
+            }
+        }
+
+        
+    }
+
+    private void OnGUI()
+    {
+        if (_showDebug)
+        {
+            int lineHeight = 25;
+            int top = 10;
+            GUI.Label(new Rect(10, top, 1000, lineHeight), "in EVALUATION: " + inAEvaluationSession);
+
+
+            top += lineHeight;
+            string[] lines = _checkerboardLogger.Lines;
+            if (lines.Length > 0)
+            {    
+                int left = 10;
+                foreach (string line in lines)
+                {
+                    GUI.Label(new Rect(left, top, 1000, lineHeight), line);
+                    top += lineHeight;
+                }
+            }
+            else
+            {
+                GUI.Label(new Rect(10, top, 1000, lineHeight), "No info to show!!!");
             }
         }
     }
