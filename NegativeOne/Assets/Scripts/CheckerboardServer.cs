@@ -29,10 +29,10 @@ public class CheckerboardServer : MonoBehaviour {
     List<string> cubes;
 
     
-    public int puzzle = 0;
+    private int puzzle = 0;
 
     
-    public int condition = 1;
+    private int condition = 1;
 
     public GUIStyle HugeStyle;
     public GUIStyle ValueStyle;
@@ -118,7 +118,7 @@ public class CheckerboardServer : MonoBehaviour {
         left = 10; top += 30;
         if (GUI.Button(new Rect(left, top, 40, 40), "1"))
         {
-            condition = 0;
+            condition = 1;
         }
         left += 40;
         if (GUI.Button(new Rect(left, top, 40, 40), "2"))
@@ -149,7 +149,7 @@ public class CheckerboardServer : MonoBehaviour {
         left += 40;
         if (GUI.Button(new Rect(left, top, 40, 40), "1"))
         {
-            puzzle = 2;
+            puzzle = 1;
         }
         left += 40;
         if (GUI.Button(new Rect(left, top, 40, 40), "2"))

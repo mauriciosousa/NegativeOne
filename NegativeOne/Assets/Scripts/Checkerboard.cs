@@ -183,28 +183,31 @@ public class Checkerboard : MonoBehaviour {
         /**
          *   EVALUATION START 
          */
-        currentSolution = GetSolutionByName("" + puzzle);
+        currentSolution = null;
+        if (puzzle != 0)
+        {
+            currentSolution = GetSolutionByName("" + puzzle);
 
-        SkipStep();
+            SkipStep();
 
-        currentSolution.wrongMoves = 0;
-        currentSolution.wrongSelections = 0;
+            currentSolution.wrongMoves = 0;
+            currentSolution.wrongSelections = 0;
 
-        inAEvaluationSession = true;
+            inAEvaluationSession = true;
 
-        startTime = DateTime.Now;
-        Debug.Log("[EVALUATION START] cond={" + condition + "}, puzzle={" + puzzle + "} at " + startTime.ToString("yy/MM/dd-H:mm:ss zzz"));
-
-
-        string filename = _evalResultsDir + '/' + startTime.ToString("yyMMdd-Hmm") + ".txt";
-
-        _evalSessionFile = new StreamWriter(filename);
-
-        _evalSessionFile.WriteLine("STARTTIME=" + startTime.ToString("yy/MM/dd-H:mm:ss zzz"));
-        _evalSessionFile.WriteLine("CONDITION=" + condition);
-        _evalSessionFile.WriteLine("PUZZLE=" + puzzle);
+            startTime = DateTime.Now;
+            Debug.Log("[EVALUATION START] cond={" + condition + "}, puzzle={" + puzzle + "} at " + startTime.ToString("yy/MM/dd-H:mm:ss zzz"));
 
 
+            string filename = _evalResultsDir + '/' + startTime.ToString("yyMMdd-Hmm") + ".txt";
+
+            _evalSessionFile = new StreamWriter(filename);
+
+            _evalSessionFile.WriteLine("STARTTIME=" + startTime.ToString("yy/MM/dd-H:mm:ss zzz"));
+            _evalSessionFile.WriteLine("CONDITION=" + condition);
+            _evalSessionFile.WriteLine("PUZZLE=" + puzzle);
+
+        }
         _applyCondition(condition);
 
     }
@@ -462,13 +465,13 @@ public class Checkerboard : MonoBehaviour {
                 {
                     // WRONG SELECTION
                     _checkerboardLogger.write("[SELECTION] WRONG");
-                    currentSolution.wrongSelections += 1;
+                    if (currentSolution != null) currentSolution.wrongSelections += 1;
                 }
             }
 
             selectedObject = o;
             selectedObject.GetComponent<Highlight>().setSelected(true);
-            if (inAEvaluationSession) currentSolution.Select(o.name);
+            if (inAEvaluationSession && currentSolution != null) currentSolution.Select(o.name);
            
         }
         else if (selectedObject != null) // MOVE OBJECT
@@ -486,13 +489,13 @@ public class Checkerboard : MonoBehaviour {
                 {
                     // WRONG 
                     _checkerboardLogger.write("[MOVE] WRONG");
-                    currentSolution.wrongMoves += 1;
+                    if (currentSolution != null) currentSolution.wrongMoves += 1;
                 }
             }
 
 
             putObjectOnTopOf(selectedObject, o);
-            if (inAEvaluationSession) currentSolution.Move(selectedObject.name, o.name);
+            if (inAEvaluationSession && currentSolution != null) currentSolution.Move(selectedObject.name, o.name);
 
             selectedObject = null;
         }
