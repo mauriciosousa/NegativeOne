@@ -203,6 +203,37 @@ public class Checkerboard : MonoBehaviour {
         _evalSessionFile.WriteLine("STARTTIME=" + startTime.ToString("yy/MM/dd-H:mm:ss zzz"));
         _evalSessionFile.WriteLine("CONDITION=" + condition);
         _evalSessionFile.WriteLine("PUZZLE=" + puzzle);
+
+
+        _applyCondition(condition);
+
+    }
+
+    private void _applyCondition(int condition)
+    {
+        switch (condition)
+        {
+
+            // ATENCAOO ----- o stream do kinect já está mirror
+            case 1:
+                // mirror avatar
+                // rotate workspace
+                transform.localScale = new Vector3(transform.localScale.x * -1, transform.localScale.y, transform.localScale.z * -1);
+                _main.mirrorPessoa = true;
+                break;
+            case 2:
+                // mirror avatar
+                _main.mirrorPessoa = true;
+                break;
+            case 3:
+                _main.mirrorPessoa = false;
+                break;
+            case 4:
+                // mirror avatar
+                _main.mirrorPessoa = true;
+                transform.localScale = new Vector3(transform.localScale.x * -1, transform.localScale.y, transform.localScale.z);
+                break;
+        }
     }
 
     private void SkipStep()

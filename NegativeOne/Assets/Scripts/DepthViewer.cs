@@ -102,6 +102,10 @@ public class DepthViewer : MonoBehaviour
 
     private GameObject meshes;
 
+    private Main _main;
+
+    private Vector3 originalLocalScale = new Vector3(0.01f, 0.01f, 0.008f);
+
     void Start()
     {
         meshes = new GameObject("Meshes");
@@ -120,8 +124,13 @@ public class DepthViewer : MonoBehaviour
             subMeshes[i] = subMesh;
         }
 
+
+        _main = GameObject.Find("Main").GetComponent<Main>();
+
+
+
         //gameObject.transform.localScale = new Vector3(0.01f, 0.01f, 0.01f);
-        meshes.transform.localScale = new Vector3(0.01f, 0.01f, 0.008f);
+        meshes.transform.localScale = originalLocalScale;
         meshes.transform.parent = transform;
         meshes.transform.localPosition = Vector3.zero;
         meshes.transform.localRotation = Quaternion.identity;
@@ -129,6 +138,14 @@ public class DepthViewer : MonoBehaviour
 
     void Update()
     {
+
+        meshes.transform.localScale = originalLocalScale;
+        if (_main.mirrorPessoa)
+        {
+            meshes.transform.localScale = new Vector3(originalLocalScale.x * -1, originalLocalScale.y, originalLocalScale.z);
+        }
+        
+
         int submeshLength = colors.Length / subMeshes.Length;
         int a, b;
         for (int i = 0; i < colors.Length; i++)

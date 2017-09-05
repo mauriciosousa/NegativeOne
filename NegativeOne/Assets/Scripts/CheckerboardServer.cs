@@ -28,10 +28,10 @@ public class CheckerboardServer : MonoBehaviour {
     List<string> positions; 
     List<string> cubes;
 
-    [Range(1,4)]
-    public int puzzle = 1;
+    
+    public int puzzle = 0;
 
-    [Range(1, 8)]
+    
     public int condition = 1;
 
     public GUIStyle HugeStyle;
@@ -118,7 +118,7 @@ public class CheckerboardServer : MonoBehaviour {
         left = 10; top += 30;
         if (GUI.Button(new Rect(left, top, 40, 40), "1"))
         {
-            condition = 1;
+            condition = 0;
         }
         left += 40;
         if (GUI.Button(new Rect(left, top, 40, 40), "2"))
@@ -142,9 +142,14 @@ public class CheckerboardServer : MonoBehaviour {
         GUI.Label(new Rect(left, top, 50, lineSize), "Choose Puzzle: ", HugeStyle); left += 160;
 
         left = 10; top += 30;
+        if (GUI.Button(new Rect(left, top, 40, 40), "0"))
+        {
+            puzzle = 0;
+        }
+        left += 40;
         if (GUI.Button(new Rect(left, top, 40, 40), "1"))
         {
-            puzzle = 1;
+            puzzle = 2;
         }
         left += 40;
         if (GUI.Button(new Rect(left, top, 40, 40), "2"))
@@ -200,6 +205,7 @@ public class CheckerboardServer : MonoBehaviour {
         GUI.Label(new Rect(left, top, 50, lineSize), "Actions: ", HugeStyle);
 
         top += 30;
+        /*
         if (GUI.Button(new Rect(left, top, 200, 40), "Ping"))
         {
             _networkView.RPC("RPC_receiveMessage", RPCMode.Others, "Ping");
@@ -212,10 +218,11 @@ public class CheckerboardServer : MonoBehaviour {
                 //print(cubes[i] + " " + positions[i]);
                 _networkView.RPC("RPC_putObjectOnTopOf_Init", RPCMode.Others, cubes[i], positions[i]);
             }
-        }
+        }*/
         top += 45;
         if (GUI.Button(new Rect(left, top, 200, 40), "Start"))
         {
+            Debug.Log("Condition={" + condition + "}, puzzle={" + puzzle + "}");
             _networkView.RPC("RPC_Start", RPCMode.Others, condition, puzzle);
         }
 

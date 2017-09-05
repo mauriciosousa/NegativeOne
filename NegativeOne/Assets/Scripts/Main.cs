@@ -38,6 +38,7 @@ public class Main : MonoBehaviour {
     private NegativeSpace _negativeSpace;
     private PerspectiveProjection _projection;
 
+    public bool mirrorPessoa = false;
 
     void Awake()
     {
