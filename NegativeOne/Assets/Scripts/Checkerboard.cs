@@ -208,6 +208,11 @@ public class Checkerboard : MonoBehaviour {
             _evalSessionFile.WriteLine("PUZZLE=" + puzzle);
 
         }
+        else
+        {
+            setUpTranningTask();
+        }
+
         _applyCondition(condition);
 
     }
@@ -237,6 +242,30 @@ public class Checkerboard : MonoBehaviour {
                 transform.localScale = new Vector3(transform.localScale.x * -1, transform.localScale.y, transform.localScale.z);
                 break;
         }
+    }
+
+    private void setUpTranningTask()
+    {
+        List<string> cubes = new List<string>();
+        cubes.Add("RedCube");
+        //cubes.Add("GreenCube");
+        cubes.Add("BlueCube");
+        cubes.Add("YellowCube");
+        cubes.Add("PinkCube");
+        cubes.Shuffle();
+
+        List<string> positions = new List<string>();
+        positions.Add("box(0,0)");
+        positions.Add("box(4,0)");
+        positions.Add("box(4,6)");
+        positions.Add("box(0,6)");
+        positions.Shuffle();
+
+        for (int i = 0; i < cubes.Count; i++)
+        {
+            putObjectOnTopOf(cubes[i], positions[i]);
+        }
+        putObjectOnTopOf("GreenCube", "box(3,3)");
     }
 
     private void SkipStep()
