@@ -19,15 +19,20 @@ public class Solution
 
     public int Step { get; private set; }
 
-    private bool finished = false;
+    public bool finished = false;
+
+    public int wrongSelections;
+    public int wrongMoves;
 
     public Solution(string filename)
     {
         _solutionThat = new Dictionary<int, string>();
         _solutionThere = new Dictionary<int, string>();
 
-        
-        string[] dirs = filename.Split(Path.DirectorySeparatorChar);
+        wrongSelections = 0;
+        wrongMoves = 0;
+
+    string[] dirs = filename.Split(Path.DirectorySeparatorChar);
         Name = dirs[dirs.Length - 1].Split('.')[0];
         if (File.Exists(filename))
         {
@@ -95,8 +100,11 @@ public class Solution
             Step += 1;
             if (Step == Steps)
             {
-                Debug.Log("FINISHED");
+
+                Debug.Log("FINISSSSSSSSSSSSSSSSSSSSSS");
                 finished = true;
+                // END Session
+
             }
             return true;
         }

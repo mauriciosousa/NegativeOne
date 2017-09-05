@@ -89,8 +89,17 @@ public class Checkerboard : MonoBehaviour {
     public Solution currentSolution;
     public bool inAEvaluationSession = false;
 
+    private string _evalResultsDir;
+    private System.IO.StreamWriter _evalSessionFile = null;
+
+    private DateTime startTime;
+
+    
+
     public void Init()
     {
+        _evalResultsDir = Application.dataPath + "/Results";
+
         _loadSolutions();
         _checkerboardLogger = new CheckerboardLogger(10);
         _main = GameObject.Find("Main").GetComponent<Main>();
@@ -157,6 +166,12 @@ public class Checkerboard : MonoBehaviour {
             putObjectOnTopOf(yellowCube, 4, 0);
         }
 
+        if (!System.IO.Directory.Exists(_evalResultsDir))
+        {
+            System.IO.Directory.CreateDirectory(_evalResultsDir);
+        }
+
+
         _init = true;
 
         client = this.GetComponent<CheckerboardClient>();
@@ -169,13 +184,63 @@ public class Checkerboard : MonoBehaviour {
          *   EVALUATION START 
          */
         currentSolution = GetSolutionByName("" + puzzle);
+
+        SkipStep();
+
+        currentSolution.wrongMoves = 0;
+        currentSolution.wrongSelections = 0;
+
         inAEvaluationSession = true;
 
-        DateTime startTime = DateTime.Now;
+        startTime = DateTime.Now;
         Debug.Log("[EVALUATION START] cond={" + condition + "}, puzzle={" + puzzle + "} at " + startTime.ToString("yy/MM/dd-H:mm:ss zzz"));
 
 
-          
+        string filename = _evalResultsDir + '/' + startTime.ToString("yyMMdd-Hmm") + ".txt";
+
+        _evalSessionFile = new StreamWriter(filename);
+
+        _evalSessionFile.WriteLine("STARTTIME=" + startTime.ToString("yy/MM/dd-H:mm:ss zzz"));
+        _evalSessionFile.WriteLine("CONDITION=" + condition);
+        _evalSessionFile.WriteLine("PUZZLE=" + puzzle);
+    }
+
+    private void SkipStep()
+    {
+        GameObject that = GameObject.Find(currentSolution.GetNextSelect());
+        GameObject there = GameObject.Find(currentSolution.GetNextMove());
+
+        List<string> cubes = _listOfCubes(that.name);
+        cubes.Shuffle();
+
+        List<string> positions = new List<string>();
+        positions.Add("box(0,0)");
+        positions.Add("box(4,0)");
+        positions.Add("box(4,6)");
+        positions.Add("box(0,6)");
+        positions.Shuffle();
+
+        for (int i = 0; i < cubes.Count; i++)
+        {
+            putObjectOnTopOf(cubes[i], positions[i]);
+        }
+
+        putObjectOnTopOf(that, there);
+        currentSolution.Move(that.name, there.name);
+    }
+
+    private List<string> _listOfCubes(string firstCube)
+    {
+        List<string> cubes = new List<string>();
+        cubes.Add("RedCube");
+        cubes.Add("GreenCube");
+        cubes.Add("BlueCube");
+        cubes.Add("YellowCube");
+        cubes.Add("PinkCube");
+
+        cubes.Remove(firstCube);
+        
+        return cubes;
     }
 
     private void _loadSolutions()
@@ -249,6 +314,33 @@ public class Checkerboard : MonoBehaviour {
             client.callHighlightUpdate(yellowCube.name, yellowCube.GetComponent<Highlight>().selected);
         }
 
+
+
+
+        // check finishzzz
+
+        if (currentSolution != null)
+        {
+            if (currentSolution.finished && _evalSessionFile != null)
+            {
+                Debug.Log("FINISSSSS");
+
+                DateTime now = DateTime.Now;
+                _evalSessionFile.WriteLine("ENDTIME=" + now.ToString("yy/MM/dd-H:mm:ss zzz"));
+
+                TimeSpan elapsed = now.Subtract(startTime);
+
+                _evalSessionFile.WriteLine("DURATION=" + elapsed.ToString());
+
+                _evalSessionFile.WriteLine("WRONGSELECTIONS=" + currentSolution.wrongSelections);
+                _evalSessionFile.WriteLine("WRONGMOVES=" + (currentSolution.wrongMoves - currentSolution.wrongSelections));
+
+                _evalSessionFile.Close();
+                _evalSessionFile = null;
+
+                currentSolution = null;
+            }
+        }
 
         if (Input.GetKeyDown(KeyCode.F1))
         {
@@ -339,6 +431,7 @@ public class Checkerboard : MonoBehaviour {
                 {
                     // WRONG SELECTION
                     _checkerboardLogger.write("[SELECTION] WRONG");
+                    currentSolution.wrongSelections += 1;
                 }
             }
 
@@ -355,13 +448,14 @@ public class Checkerboard : MonoBehaviour {
             {
                 if (isNextMoveIfEvaluation(selectedObject.name, o.name))
                 {
-                    // CORRECT SELECTION
+                    // CORRECT 
                     _checkerboardLogger.write("[MOVE] CORRECT");
                 }
                 else
                 {
-                    // WRONG SELECTION
+                    // WRONG 
                     _checkerboardLogger.write("[MOVE] WRONG");
+                    currentSolution.wrongMoves += 1;
                 }
             }
 

@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-static class MyExtensions
+public static class MyExtensions
 {
     public static void Shuffle<T>(this IList<T> list)
     {

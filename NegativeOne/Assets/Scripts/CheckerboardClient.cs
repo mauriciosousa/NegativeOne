@@ -106,15 +106,27 @@ public class CheckerboardClient : MonoBehaviour {
         }
     }
 
+    public bool hideScreen = false;
+    public Texture hideTexture;
+
     [RPC]
     void RPC_ShowHide()
     {
         if (Network.peerType != NetworkPeerType.Server)
         {
-            GameObject hideScreenGo = GameObject.Find("HideScreen");
-            Hide hideScript = hideScreenGo.GetComponent<Hide>();
-            hideScript.setEnabled(!hideScript.Enabled);
+            //GameObject hideScreenGo = GameObject.Find("HideScreen");
+            //Hide hideScript = hideScreenGo.GetComponent<Hide>();
+            //hideScript.setEnabled(!hideScript.Enabled);
+            hideScreen = !hideScreen;
         }
     }
     #endregion
+
+    void OnGUI()
+    {
+        if (hideScreen)
+        {
+            GUI.DrawTexture(new Rect(0, 0, Screen.width, Screen.height), hideTexture);
+        }
+    }
 }
