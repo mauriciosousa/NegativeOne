@@ -1,6 +1,6 @@
 ns.length=0.50
 
-rpc.server.address=192.168.0.101
+rpc.server.address=192.168.0.112
 
 Instructor.machine.address=192.168.0.101
 
