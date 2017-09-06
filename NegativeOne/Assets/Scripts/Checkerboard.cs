@@ -226,20 +226,22 @@ public class Checkerboard : MonoBehaviour {
             case 1:
                 // mirror avatar
                 // rotate workspace
-                transform.localScale = new Vector3(transform.localScale.x * -1, transform.localScale.y, transform.localScale.z * -1);
+                transform.localScale = new Vector3(scaleFactor, scaleFactor, scaleFactor * -1.0f);
                 _main.mirrorPessoa = true;
                 break;
             case 2:
                 // mirror avatar
+                transform.localScale = new Vector3(scaleFactor, scaleFactor, scaleFactor);
                 _main.mirrorPessoa = true;
                 break;
             case 3:
+                transform.localScale = new Vector3(scaleFactor, scaleFactor, scaleFactor);
                 _main.mirrorPessoa = false;
                 break;
             case 4:
                 // mirror avatar
+                transform.localScale = new Vector3(scaleFactor * -1.0f, scaleFactor, scaleFactor);
                 _main.mirrorPessoa = true;
-                transform.localScale = new Vector3(transform.localScale.x * -1, transform.localScale.y, transform.localScale.z);
                 break;
         }
     }

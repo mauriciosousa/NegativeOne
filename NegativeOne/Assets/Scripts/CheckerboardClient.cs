@@ -103,6 +103,10 @@ public class CheckerboardClient : MonoBehaviour {
             {
                 _board.StartEvaluation(condition, puzzle);
             }
+            else
+            {
+                _main.mirrorPessoa = true;
+            }
         }
     }
 
