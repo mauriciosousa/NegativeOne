@@ -161,6 +161,29 @@ public class DepthViewer : MonoBehaviour
         {
             m.Apply();
             m.gameObject.GetComponent<MeshFilter>().sharedMesh.RecalculateBounds();
-        }        
+        }
+
+
+        // correct mesh position
+        if (Input.GetKeyDown(KeyCode.UpArrow))
+        {
+            meshes.transform.position += meshes.transform.up * 0.1f;
+            Debug.Log("mesh up");
+        }
+        if (Input.GetKeyDown(KeyCode.DownArrow))
+        {
+            meshes.transform.position -= meshes.transform.up * 0.1f;
+            Debug.Log("mesh down");
+        }
+        if (Input.GetKeyDown(KeyCode.RightArrow))
+        {
+            meshes.transform.position += meshes.transform.right * 0.1f;
+            Debug.Log("mesh right");
+        }
+        if (Input.GetKeyDown(KeyCode.LeftArrow))
+        {
+            meshes.transform.position -= meshes.transform.right * 0.1f;
+            Debug.Log("mesh left");
+        }
     }
 }

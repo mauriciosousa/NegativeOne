@@ -188,7 +188,7 @@ public class Checkerboard : MonoBehaviour {
         {
             currentSolution = GetSolutionByName("" + puzzle);
 
-            SkipStep();
+            SkipFirstStep();
 
             currentSolution.wrongMoves = 0;
             currentSolution.wrongSelections = 0;
@@ -199,7 +199,10 @@ public class Checkerboard : MonoBehaviour {
             Debug.Log("[EVALUATION START] cond={" + condition + "}, puzzle={" + puzzle + "} at " + startTime.ToString("yy/MM/dd-H:mm:ss zzz"));
 
 
-            string filename = _evalResultsDir + '/' + startTime.ToString("yyMMdd-Hmm") + ".txt";
+            string filename = _evalResultsDir + '/' + startTime.ToString("yyMMdd-Hmmss") + ".txt";
+
+            if(_evalSessionFile != null)
+                _evalSessionFile.Close();
 
             _evalSessionFile = new StreamWriter(filename);
 
@@ -226,7 +229,7 @@ public class Checkerboard : MonoBehaviour {
             case 1:
                 // mirror avatar
                 // rotate workspace
-                transform.localScale = new Vector3(scaleFactor, scaleFactor, scaleFactor * -1.0f);
+                transform.localScale = new Vector3(scaleFactor * -1.0f, scaleFactor, scaleFactor * -1.0f);
                 _main.mirrorPessoa = true;
                 break;
             case 2:
@@ -270,7 +273,7 @@ public class Checkerboard : MonoBehaviour {
         putObjectOnTopOf("GreenCube", "box(3,3)");
     }
 
-    private void SkipStep()
+    private void SkipFirstStep()
     {
         GameObject that = GameObject.Find(currentSolution.GetNextSelect());
         GameObject there = GameObject.Find(currentSolution.GetNextMove());
@@ -289,6 +292,15 @@ public class Checkerboard : MonoBehaviour {
         {
             putObjectOnTopOf(cubes[i], positions[i]);
         }
+
+        putObjectOnTopOf(that, there);
+        currentSolution.Move(that.name, there.name);
+    }
+
+    private void SkipStep()
+    {
+        GameObject that = GameObject.Find(currentSolution.GetNextSelect());
+        GameObject there = GameObject.Find(currentSolution.GetNextMove());
 
         putObjectOnTopOf(that, there);
         currentSolution.Move(that.name, there.name);
@@ -390,6 +402,10 @@ public class Checkerboard : MonoBehaviour {
             {
                 Debug.Log("FINISSSSS");
 
+
+                client.showHide();
+                
+
                 DateTime now = DateTime.Now;
                 _evalSessionFile.WriteLine("ENDTIME=" + now.ToString("yy/MM/dd-H:mm:ss zzz"));
 
@@ -410,6 +426,11 @@ public class Checkerboard : MonoBehaviour {
         if (Input.GetKeyDown(KeyCode.F1))
         {
             _showDebug = !_showDebug;
+        }
+
+        if(Input.GetKeyDown(KeyCode.S))
+        {
+            SkipStep();
         }
     }
 

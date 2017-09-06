@@ -133,4 +133,9 @@ public class CheckerboardClient : MonoBehaviour {
             GUI.DrawTexture(new Rect(0, 0, Screen.width, Screen.height), hideTexture);
         }
     }
+
+    internal void showHide()
+    {
+        _networkView.RPC("RPC_ShowHide", RPCMode.All);
+    }
 }
